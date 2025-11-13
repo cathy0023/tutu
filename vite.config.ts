@@ -13,4 +13,7 @@ function getPlugins() {
 
 export default defineConfig({
   plugins: getPlugins(),
+  base: process.env.GITHUB_REPOSITORY 
+    ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/`
+    : '/',
 });
