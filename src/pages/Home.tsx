@@ -19,10 +19,12 @@ export default function Home() {
         setIsDragging(true);
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-        if (!isDragging)
-            return;
+    const handleTouchStart = (e: React.TouchEvent) => {
+        e.preventDefault(); // 防止默认滚动行为
+        setIsDragging(true);
+    };
 
+    const updatePosition = (clientX: number, clientY: number) => {
         const gameArea = document.getElementById("game-area");
 
         if (!gameArea)
@@ -31,9 +33,25 @@ export default function Home() {
         const rect = gameArea.getBoundingClientRect();
 
         setFlyPosition({
-            x: e.clientX - rect.left - 20,
-            y: e.clientY - rect.top - 20
+            x: clientX - rect.left - 20,
+            y: clientY - rect.top - 20
         });
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging)
+            return;
+        updatePosition(e.clientX, e.clientY);
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        e.preventDefault(); // 防止默认滚动行为
+        if (!isDragging)
+            return;
+        if (e.touches.length > 0) {
+            const touch = e.touches[0];
+            updatePosition(touch.clientX, touch.clientY);
+        }
     };
 
     const handleMouseUp = () => {
@@ -54,6 +72,11 @@ export default function Home() {
         }
 
         setIsDragging(false);
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        e.preventDefault();
+        handleMouseUp();
     };
 
     const goToNextStage = () => {
@@ -422,7 +445,9 @@ export default function Home() {
                         className="relative bg-green-100 h-64 md:h-96 p-4"
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseUp}>
+                        onMouseLeave={handleMouseUp}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}>
                         {}
                         <div
                             ref={leafRef}
@@ -511,7 +536,7 @@ export default function Home() {
                         <AnimatePresence>
                             {!isLeafClosed && <motion.div
                                 ref={flyRef}
-                                className="absolute cursor-move z-20"
+                                className="absolute cursor-move z-20 touch-none"
                                 style={{
                                     left: `${flyPosition.x}px`,
                                     top: `${flyPosition.y}px`,
@@ -519,6 +544,7 @@ export default function Home() {
                                     height: "40px"
                                 }}
                                 onMouseDown={handleMouseDown}
+                                onTouchStart={handleTouchStart}
                                 whileHover={{
                                     scale: 1.1
                                 }}
@@ -564,7 +590,7 @@ export default function Home() {
                             transition={{
                                 delay: 1
                             }}>
-                            <p className="text-green-700 font-medium">用鼠标抓住苍蝇，拖到捕蝇草的叶子里！</p>
+                            <p className="text-green-700 font-medium">用手指（或鼠标）抓住苍蝇，拖到捕蝇草的叶子里！</p>
                         </motion.div>
                     </div>
                     {}
